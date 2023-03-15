@@ -1,4 +1,4 @@
-﻿namespace PAMSI_1;
+﻿namespace PAMSI_1.Transmissions;
 
 public class Transmission
 {
@@ -6,7 +6,7 @@ public class Transmission
     public Guid Id { get; init; }
     public int Lenght => Packets.Length;
     public TransmissionHeader Header { get; protected set; }
-    
+
 }
 
 public readonly record struct TransmissionHeader(Guid Id, int PacketCount);

@@ -4,8 +4,6 @@ Console.WriteLine("Enter message to send:");
 
 var message = Console.ReadLine();
 
-// message = "example implementation";
-
 if (string.IsNullOrWhiteSpace(message))
 {
     Console.WriteLine("Message should not be empty.");
@@ -14,8 +12,6 @@ if (string.IsNullOrWhiteSpace(message))
 
 Console.Write("Select packet lenght: ");
 var packetLenghtInput = Console.ReadLine();
-
-// packetLenghtInput = "5";
 
 if (!int.TryParse(packetLenghtInput, out var packetLenght) || packetLenght < 1)
 {
@@ -30,8 +26,14 @@ var sender = new Sender(server)
     PacketLength = packetLenght
 };
 
+var sender2 = new Sender(server)
+{
+    PacketLength = packetLenght
+};
+
 var receiver = new Receiver(server);
 
 sender.SendMessage(message);
+sender2.SendMessage(message + message);
 
 Console.Read();

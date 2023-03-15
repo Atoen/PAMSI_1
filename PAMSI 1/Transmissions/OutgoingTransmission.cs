@@ -1,4 +1,4 @@
-﻿namespace PAMSI_1;
+﻿namespace PAMSI_1.Transmissions;
 
 public class OutgoingTransmission : Transmission
 {
@@ -6,9 +6,9 @@ public class OutgoingTransmission : Transmission
     {
         Id = Guid.NewGuid();
         PacketLength = packetLenght;
-        
+
         SplitMessage(message);
-        
+
         Header = new TransmissionHeader(Id, Lenght);
     }
 
@@ -18,7 +18,7 @@ public class OutgoingTransmission : Transmission
     {
         var packetCount = (int) Math.Ceiling((double) message.Length / PacketLength);
         Packets = new Packet[packetCount];
-        
+
         for (int i = 0, p = 0; i < message.Length; i += PacketLength, p++)
         {
             var length = Math.Min(PacketLength, message.Length - i);
@@ -34,4 +34,3 @@ public class OutgoingTransmission : Transmission
         }
     }
 }
-

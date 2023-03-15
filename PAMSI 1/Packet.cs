@@ -1,6 +1,6 @@
 ﻿namespace PAMSI_1;
 
-public readonly record struct Packet
+public record Packet
 {
     public int Index { get; init; }
     public Guid TransmissionId { get; init; }

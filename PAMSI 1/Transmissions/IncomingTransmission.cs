@@ -1,4 +1,4 @@
-﻿namespace PAMSI_1;
+﻿namespace PAMSI_1.Transmissions;
 
 public class IncomingTransmission : Transmission
 {
@@ -7,7 +7,7 @@ public class IncomingTransmission : Transmission
         Packets = new Packet[expectedLength];
         RemainingPackets = expectedLength;
     }
-    
+
     public int RemainingPackets { get; set; }
     public string Data => string.Join("", Packets.Select(p => p.Data));
 

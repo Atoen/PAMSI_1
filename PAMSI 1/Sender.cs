@@ -1,4 +1,6 @@
-﻿namespace PAMSI_1;
+﻿using PAMSI_1.Transmissions;
+
+namespace PAMSI_1;
 
 public class Sender
 {
@@ -14,8 +16,6 @@ public class Sender
     {
         var transmission = new OutgoingTransmission(message, PacketLength);
 
-        Console.WriteLine("Sending transmission");
-        
         _server.SendMessage(transmission);
     }
 }
