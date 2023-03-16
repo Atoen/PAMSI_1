@@ -26,14 +26,8 @@ var sender = new Sender(server)
     PacketLength = packetLenght
 };
 
-var sender2 = new Sender(server)
-{
-    PacketLength = packetLenght
-};
-
 var receiver = new Receiver(server);
 
 sender.SendMessage(message);
-sender2.SendMessage(message + message);
 
 Console.Read();

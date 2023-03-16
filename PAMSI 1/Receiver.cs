@@ -1,7 +1,6 @@
-﻿using System.Text;
-using PAMSI_1.Transmissions;
+﻿namespace PAMSI_1;
 
-namespace PAMSI_1;
+public delegate void TransmissionFinishedEventHandler(object sender, ushort transmissionId);
 
 public class Receiver
 {
@@ -11,60 +10,48 @@ public class Receiver
 
         _server.TransmissionStarted += ServerOnTransmissionStarted;
         _server.PacketReceived += ServerOnPacketReceived;
+
+        TransmissionFinished += _server.CloseTransmission;
     }
 
+    public event TransmissionFinishedEventHandler? TransmissionFinished;
+
+    private readonly object _syncRoot = new();
     private readonly Server _server;
-    private readonly SemaphoreSlim _slim = new(1, 1);
-    private readonly Dictionary<Guid, IncomingTransmission> _activeTransmissions = new();
 
     private void ServerOnTransmissionStarted(object sender, TransmissionHeader header)
     {
         Console.WriteLine($"Incoming transmission {header.Id}, expecting {header.PacketCount} packets.");
-
-        _activeTransmissions.Add(header.Id, new IncomingTransmission(header.PacketCount)
-        {
-            Id = header.Id
-        });
     }
 
     private void ServerOnPacketReceived(object sender, Packet packet)
     {
-        _slim.Wait();
-
-        try
+        lock (_syncRoot)
         {
-            ReceivePacket(packet);
-        }
-        finally
-        {
-            _slim.Release();
+            ProcessPacket(packet);
         }
     }
 
-    private void ReceivePacket(Packet packet)
+    private void ProcessPacket(Packet packet)
     {
-        if (!_activeTransmissions.TryGetValue(packet.TransmissionId, out var incomingTransmission))
+        if (!_server.ActiveTransmissions.TryGetValue(packet.TransmissionId, out var transmission))
         {
-            throw new InvalidDataException(
-                $"Received packet's id did not match any of open transmissions'. Packet: {packet}");
+            Console.WriteLine($"Received packet is not bound to any open transmission. Packet: {packet}");
+            return;
         }
 
-        Console.WriteLine($"Received packet {{{packet}}}");
+        Console.WriteLine($"Received packet {packet}");
 
-        incomingTransmission.AddPacket(packet);
-        incomingTransmission.RemainingPackets--;
+        transmission.ReceivePacket(packet);
 
-        if (incomingTransmission.RemainingPackets == 0)
-        {
-            CloseTransmission(incomingTransmission);
-        }
+        if (!transmission.Completed) return;
+
+        TransmissionFinished?.Invoke(this, transmission.Id);
+        ReadData(transmission);
     }
 
-    private void CloseTransmission(IncomingTransmission transmission)
+    private void ReadData(Transmission transmission)
     {
-        Console.WriteLine($"Transmission {transmission.Id} has finished ({transmission.Lenght} packets).");
-        Console.WriteLine($"Data received: {transmission.Data}");
-
-        _activeTransmissions.Remove(transmission.Id);
+        Console.WriteLine($"Transmission {transmission.Id} data has been received: {transmission.Data}");
     }
 }
