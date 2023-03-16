@@ -19,12 +19,12 @@ if (!int.TryParse(packetLenghtInput, out var packetLenght) || packetLenght < 1)
     return;
 }
 
-var server = new Server();
-
-var sender = new Sender(server)
+var server = new Server
 {
-    PacketLength = packetLenght
+    PacketSize = packetLenght
 };
+
+var sender = new Sender(server);
 
 var receiver = new Receiver(server);
 

@@ -1,4 +1,6 @@
-﻿namespace PAMSI_1;
+﻿using PAMSI_1.Logging;
+
+namespace PAMSI_1;
 
 public delegate void TransmissionFinishedEventHandler(object sender, ushort transmissionId);
 
@@ -9,22 +11,28 @@ public class Receiver
         _server = server;
 
         _server.TransmissionStarted += ServerOnTransmissionStarted;
-        _server.PacketReceived += ServerOnPacketReceived;
+        _server.PacketSent += ReceivePacket;
 
         TransmissionFinished += _server.CloseTransmission;
     }
 
     public event TransmissionFinishedEventHandler? TransmissionFinished;
 
+    private readonly Dictionary<ushort, Transmission> _incomingTransmission = new();
+
     private readonly object _syncRoot = new();
     private readonly Server _server;
 
+    private readonly ILogger _logger = new Logger("Receiver", LogLevel.Trace);
+
     private void ServerOnTransmissionStarted(object sender, TransmissionHeader header)
     {
-        Console.WriteLine($"Incoming transmission {header.Id}, expecting {header.PacketCount} packets.");
+        _logger.LogInfo($"Incoming transmission {header.Id}, expecting {header.PacketCount} packets.");
+
+        _incomingTransmission.Add(header.Id, new Transmission(header));
     }
 
-    private void ServerOnPacketReceived(object sender, Packet packet)
+    private void ReceivePacket(object sender, Packet packet)
     {
         lock (_syncRoot)
         {
@@ -34,24 +42,26 @@ public class Receiver
 
     private void ProcessPacket(Packet packet)
     {
-        if (!_server.ActiveTransmissions.TryGetValue(packet.TransmissionId, out var transmission))
+        if (!_incomingTransmission.TryGetValue(packet.TransmissionId, out var transmission))
         {
-            Console.WriteLine($"Received packet is not bound to any open transmission. Packet: {packet}");
+            _logger.LogWarning($"Received packet is not bound to any open transmission. Packet: {packet}");
             return;
         }
 
-        Console.WriteLine($"Received packet {packet}");
+        _logger.LogTrace($"Received packet {packet}");
 
         transmission.ReceivePacket(packet);
 
         if (!transmission.Completed) return;
 
         TransmissionFinished?.Invoke(this, transmission.Id);
-        ReadData(transmission);
+        FinishTransmission(transmission);
     }
 
-    private void ReadData(Transmission transmission)
+    private void FinishTransmission(Transmission transmission)
     {
-        Console.WriteLine($"Transmission {transmission.Id} data has been received: {transmission.Data}");
+        _incomingTransmission.Remove(transmission.Id);
+
+        _logger.LogInfo($"Transmission {transmission.Id} data has been received: {transmission.Data}");
     }
 }

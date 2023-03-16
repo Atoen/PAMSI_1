@@ -1,20 +1,25 @@
-﻿using System.Diagnostics;
+﻿using PAMSI_1.Logging;
 
 namespace PAMSI_1;
 
-public delegate void PacketReceivedEventHandler(object sender, Packet packet);
+public delegate void PacketSentEventHandler(object sender, Packet packet);
 public delegate void TransmissionStartedEventHandler(object sender, TransmissionHeader header);
 
 public class Server
 {
-    public event PacketReceivedEventHandler? PacketReceived;
+    public event PacketSentEventHandler? PacketSent;
     public event TransmissionStartedEventHandler? TransmissionStarted;
 
-    public void SendMessage(string message, int packetSize)
+    public int PacketSize { get; set; } = 100;
+
+    private readonly Dictionary<ushort, TransmissionHeader> _activeTransmissions = new();
+    private readonly ILogger _logger = new Logger("Server", LogLevel.Trace);
+
+    public void SendMessage(string message)
     {
         var transmissionId = GenerateTransmissionId();
 
-        var packets = CreatePackets(message, packetSize, transmissionId);
+        var packets = CreatePackets(message, PacketSize, transmissionId);
         var header = new TransmissionHeader(transmissionId, packets.Length);
 
         StartTransmission(header, packets);
@@ -44,34 +49,30 @@ public class Server
 
     private void StartTransmission(TransmissionHeader header, Packet[] packets)
     {
-        ActiveTransmissions.Add(header.Id, new Transmission(header));
-
-        Console.WriteLine($"Transmission {header.Id} started.");
+        _activeTransmissions.Add(header.Id, header);
+        _logger.LogInfo($"Transmission {header.Id} started.");
 
         TransmissionStarted?.Invoke(this, header);
 
         var packetTasks = packets.Select(SendPacket).ToArray();
-
         Task.WhenAll(packetTasks);
 
-        Console.WriteLine($"Transmission {header.Id} packets have been sent.");
+        _logger.LogTrace($"Transmission {header.Id} packets ({header.PacketCount}) have been sent.");
     }
 
     private async Task SendPacket(Packet packet)
     {
-        var delay = Random.Shared.Next(100, 1000);
-        await Task.Delay(delay);
+        var millisecondsDelay = Random.Shared.Next(100, 1000);
+        await Task.Delay(millisecondsDelay);
 
-        PacketReceived?.Invoke(this, packet);
+        PacketSent?.Invoke(this, packet);
     }
-
-    public readonly Dictionary<ushort, Transmission> ActiveTransmissions = new();
 
     private ushort GenerateTransmissionId()
     {
         var randomId = (ushort) Random.Shared.Next(0, ushort.MaxValue);
 
-        while (ActiveTransmissions.ContainsKey(randomId))
+        while (_activeTransmissions.ContainsKey(randomId))
         {
             randomId = (ushort) Random.Shared.Next(0, ushort.MaxValue);
         }
@@ -81,6 +82,6 @@ public class Server
 
     public void CloseTransmission(object sender, ushort id)
     {
-        ActiveTransmissions.Remove(id);
+        _activeTransmissions.Remove(id);
     }
 }

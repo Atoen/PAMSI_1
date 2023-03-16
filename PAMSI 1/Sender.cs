@@ -1,4 +1,6 @@
-﻿namespace PAMSI_1;
+﻿using PAMSI_1.Logging;
+
+namespace PAMSI_1;
 
 public class Sender
 {
@@ -8,15 +10,13 @@ public class Sender
     }
 
     private readonly Server _server;
-    public required int PacketLength { get; init; }
+
+    private readonly ILogger _logger = new Logger("Sender", LogLevel.Trace);
 
     public void SendMessage(string message)
     {
-        // var transmission = new OutgoingTransmission(message, PacketLength)
-        // {
-        //     Id = _server.GenerateTransmissionId()
-        // };
+        _logger.LogTrace($"Sending message.");
 
-        _server.SendMessage(message, PacketLength);
+        _server.SendMessage(message);
     }
 }

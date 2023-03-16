@@ -3,7 +3,6 @@
 public record Packet
 {
     public int Index { get; init; }
-    // public Guid TransmissionId { get; init; }
 
     public ushort TransmissionId { get; init; }
     public required string Data { get; init; }
