@@ -1,18 +1,22 @@
-﻿namespace PAMSI_1;
+﻿using System.Text;
+using PAMSI_1.DataStructures;
+
+namespace PAMSI_1;
 
 public class Transmission
 {
     public Transmission(TransmissionHeader header)
     {
         Id = header.Id;
-        Packets = new Packet[header.PacketCount];
+        PacketsReceived = new PriorityQueue2<Packet, int>();
         PacketsLeftToDeliver = header.PacketCount;
     }
 
-    public Packet[] Packets { get; }
+    public readonly PriorityQueue2<Packet, int> PacketsReceived;
+
     public ushort Id { get; }
 
-    public int Lenght => Packets.Length;
+    public int Length => PacketsReceived.Count;
     public string Data
     {
         get
@@ -22,7 +26,15 @@ public class Transmission
                 throw new InvalidOperationException("Attempting to read data from an unfinished transmission");
             }
 
-            return string.Join("", Packets.Select(p => p.Data));
+            var builder = new StringBuilder();
+
+            while (!PacketsReceived.IsEmpty)
+            {
+                var packet = PacketsReceived.Dequeue();
+                builder.Append(packet.Data);
+            }
+
+            return builder.ToString();
         }
     }
 
@@ -32,7 +44,7 @@ public class Transmission
 
     public void ReceivePacket(Packet packet)
     {
-        Packets[packet.Index] = packet;
+        PacketsReceived.Enqueue(packet, packet.Index);
         PacketsLeftToDeliver--;
     }
 }

@@ -10,18 +10,18 @@ if (string.IsNullOrWhiteSpace(message))
     return;
 }
 
-Console.Write("Select packet lenght: ");
-var packetLenghtInput = Console.ReadLine();
+Console.Write("Select packet length: ");
+var packetLengthInput = Console.ReadLine();
 
-if (!int.TryParse(packetLenghtInput, out var packetLenght) || packetLenght < 1)
+if (!int.TryParse(packetLengthInput, out var packetLength) || packetLength < 1)
 {
-    Console.WriteLine("Packet lenght must be a whole number not less than 1.");
+    Console.WriteLine("Packet length must be a whole number not less than 1.");
     return;
 }
 
 var server = new Server
 {
-    PacketSize = packetLenght
+    PacketSize = packetLength
 };
 
 var sender = new Sender(server);
