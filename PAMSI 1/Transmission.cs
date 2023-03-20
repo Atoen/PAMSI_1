@@ -16,26 +16,33 @@ public class Transmission
 
     public ushort Id { get; }
 
-    public int Length => PacketsReceived.Count;
+    private string _data = string.Empty;
     public string Data
     {
         get
         {
             if (!Completed)
             {
-                throw new InvalidOperationException("Attempting to read data from an unfinished transmission");
+                throw new InvalidOperationException("Attempting to read data from an uncompleted transmission.");
             }
 
-            var builder = new StringBuilder();
-
-            while (!PacketsReceived.IsEmpty)
-            {
-                var packet = PacketsReceived.Dequeue();
-                builder.Append(packet.Data);
-            }
-
-            return builder.ToString();
+            if (_data == string.Empty) _data = GetPacketsData();
+            
+            return _data;
         }
+    }
+
+    private string GetPacketsData()
+    {
+        var builder = new StringBuilder();
+
+        while (!PacketsReceived.IsEmpty)
+        {
+            var packet = PacketsReceived.Dequeue();
+            builder.Append(packet.Data);
+        }
+
+        return builder.ToString();
     }
 
     public int PacketsLeftToDeliver { get; private set; }

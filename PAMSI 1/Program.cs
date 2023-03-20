@@ -1,33 +1,63 @@
 ﻿using PAMSI_1;
+using PAMSI_1.DataStructures;
 
-Console.WriteLine("Enter message to send:");
-
-var message = Console.ReadLine();
-
-if (string.IsNullOrWhiteSpace(message))
+var hashSet = new HashSet3<int>
 {
-    Console.WriteLine("Message should not be empty.");
-    return;
-}
-
-Console.Write("Select packet length: ");
-var packetLengthInput = Console.ReadLine();
-
-if (!int.TryParse(packetLengthInput, out var packetLength) || packetLength < 1)
-{
-    Console.WriteLine("Packet length must be a whole number not less than 1.");
-    return;
-}
-
-var server = new Server
-{
-    PacketSize = packetLength
+    1,
+    1,
+    2,
+    2,
+    3,
+    4,
+    4,
+    4,
+    4,
+    4,
+    12,
+    45,
+    77,
+    4,
+    4
 };
 
-var sender = new Sender(server);
+// hashSet.Remove(3);
 
-var receiver = new Receiver(server);
+foreach (var element in hashSet)
+{
+    Console.WriteLine(element);
+}
 
-sender.SendMessage(message);
+Console.WriteLine(hashSet.Contains(1));
 
-Console.Read();
+;
+
+// Console.WriteLine("Enter message to send:");
+// var message = Console.ReadLine();
+//
+// if (string.IsNullOrWhiteSpace(message))
+// {
+//     Console.WriteLine("Message should not be empty.");
+//     return;
+// }
+//
+// Console.Write("Select packet length: ");
+// var packetLengthInput = Console.ReadLine();
+//
+// if (!int.TryParse(packetLengthInput, out var packetLength) || packetLength < 1)
+// {
+//     Console.WriteLine("Packet length must be a whole number not less than 1.");
+//     return;
+// }
+//
+// var server = new Server
+// {
+//     PacketSize = packetLength
+// };
+//
+// var sender = new Sender(server);
+//
+// var receiver = new Receiver(server);
+//
+// sender.SendMessage(message);
+//
+// Console.Read();

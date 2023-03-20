@@ -4,23 +4,25 @@ public class PriorityQueue2<TItem, TPriority>
 {
     public PriorityQueue2()
     {
-        _entries = Array.Empty<(TItem item, TPriority priority)>();
+        _entries = Array.Empty<Entry>();
         _comparer = Comparer<TPriority>.Default;
     }
 
     public PriorityQueue2(IComparer<TPriority> comparer)
     {
-        _entries = Array.Empty<(TItem item, TPriority priority)>();
+        _entries = Array.Empty<Entry>();
         _comparer = comparer;
     }
 
     private const int DefaultCapacity = 4;
 
+    private record struct Entry(TItem Item, TPriority Priority);
+
     public int Count { get; private set; }
     public int Capacity => _entries.Length;
     public bool IsEmpty => Count == 0;
 
-    private (TItem item, TPriority priority)[] _entries;
+    private Entry[] _entries;
     private readonly IComparer<TPriority> _comparer;
 
     public void Enqueue(TItem item, TPriority priority)
@@ -30,7 +32,7 @@ public class PriorityQueue2<TItem, TPriority>
             Grow(Count + 1);
         }
 
-        MoveEntryUp((item, priority), Count);
+        MoveEntryUp(new Entry(item, priority), Count);
 
         Count++;
     }
@@ -42,7 +44,7 @@ public class PriorityQueue2<TItem, TPriority>
             throw new InvalidOperationException("The priority queue is empty.");
         }
 
-        return _entries[0].item;
+        return _entries[0].Item;
     }
 
     public TItem Dequeue()
@@ -52,7 +54,7 @@ public class PriorityQueue2<TItem, TPriority>
             throw new InvalidOperationException("The priority queue is empty.");
         }
 
-        var item = _entries[0].item;
+        var item = _entries[0].Item;
 
         RemoveRootEntry();
 
@@ -80,14 +82,14 @@ public class PriorityQueue2<TItem, TPriority>
         _entries[lastEntryIndex] = default;
     }
 
-    private void MoveEntryUp((TItem item, TPriority priority) entry, int index)
+    private void MoveEntryUp(Entry entry, int index)
     {
         while (index > 0)
         {
             var parentIndex = GetParentIndex(index);
             var parent = _entries[parentIndex];
 
-            if (_comparer.Compare(entry.priority, parent.priority) < 0)
+            if (_comparer.Compare(entry.Priority, parent.Priority) < 0)
             {
                 _entries[index] = parent;
                 index = parentIndex;
@@ -101,7 +103,7 @@ public class PriorityQueue2<TItem, TPriority>
         _entries[index] = entry;
     }
 
-    private void MoveEntryDown((TItem item, TPriority priority) entry, int index)
+    private void MoveEntryDown(Entry entry, int index)
     {
         int i;
         while ((i = GetFirstChildIndex(index)) < Count)
@@ -114,14 +116,14 @@ public class PriorityQueue2<TItem, TPriority>
             while (++i < childIndexUpperBound)
             {
                 var nextChild = _entries[i];
-                if (_comparer.Compare(nextChild.priority, minChild.priority) < 0)
+                if (_comparer.Compare(nextChild.Priority, minChild.Priority) < 0)
                 {
                     minChild = nextChild;
                     minChildIndex = i;
                 }
             }
 
-            if (_comparer.Compare(entry.priority, minChild.priority) <= 0)
+            if (_comparer.Compare(entry.Priority, minChild.Priority) <= 0)
             {
                 break;
             }

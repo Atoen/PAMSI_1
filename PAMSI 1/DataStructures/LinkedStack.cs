@@ -31,10 +31,7 @@ public class LinkedStack<T> : IStack<T>
 
     public void Push(T item)
     {
-        var newNode = new LinkedStackNode<T>(item)
-        {
-            Next = _head
-        };
+        var newNode = new LinkedStackNode<T>(item) { Next = _head };
 
         _head = newNode;
     }

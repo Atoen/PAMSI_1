@@ -11,7 +11,7 @@ public class Receiver
         _server = server;
 
         _server.TransmissionStarted += ServerOnTransmissionStarted;
-        _server.PacketSent += ReceivePacket;
+        _server.PacketTransmitted += ReceivePacket;
 
         TransmissionFinished += _server.CloseTransmission;
     }
@@ -52,14 +52,15 @@ public class Receiver
 
         transmission.ReceivePacket(packet);
 
-        if (!transmission.Completed) return;
-
-        TransmissionFinished?.Invoke(this, transmission.Id);
-        FinishTransmission(transmission);
+        if (transmission.Completed)
+        {
+            FinishTransmission(transmission);
+        }
     }
 
     private void FinishTransmission(Transmission transmission)
     {
+        TransmissionFinished?.Invoke(this, transmission.Id);
         _incomingTransmission.Remove(transmission.Id);
 
         _logger.LogInfo($"Transmission {transmission.Id} data has been received: {transmission.Data}");
