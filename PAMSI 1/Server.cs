@@ -13,7 +13,8 @@ public class Server
 
     public int PacketSize { get; set; } = 100;
 
-    private readonly HashSet3<ushort> _activeTransmissions = new();
+    // private readonly HashSet3<ushort> _activeTransmissions = new();
+    private readonly SimpleArrayList<ushort> _activeTransmissions = new();
     private readonly ILogger _logger = new Logger("Server", LogLevel.Trace);
 
     public void SendMessage(string message)

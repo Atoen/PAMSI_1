@@ -8,11 +8,11 @@ public class Transmission
     public Transmission(TransmissionHeader header)
     {
         Id = header.Id;
-        PacketsReceived = new PriorityQueue2<Packet, int>();
-        PacketsLeftToDeliver = header.PacketCount;
+        PacketsReceived = new SimplePriorityQueue<Packet, int>();
+        PacketsLeftToReceive = header.PacketCount;
     }
 
-    public readonly PriorityQueue2<Packet, int> PacketsReceived;
+    public readonly SimplePriorityQueue<Packet, int> PacketsReceived;
 
     public ushort Id { get; }
 
@@ -27,7 +27,7 @@ public class Transmission
             }
 
             if (_data == string.Empty) _data = GetPacketsData();
-            
+
             return _data;
         }
     }
@@ -45,14 +45,14 @@ public class Transmission
         return builder.ToString();
     }
 
-    public int PacketsLeftToDeliver { get; private set; }
+    public int PacketsLeftToReceive { get; private set; }
 
-    public bool Completed => PacketsLeftToDeliver == 0;
+    public bool Completed => PacketsLeftToReceive == 0;
 
     public void ReceivePacket(Packet packet)
     {
         PacketsReceived.Enqueue(packet, packet.Index);
-        PacketsLeftToDeliver--;
+        PacketsLeftToReceive--;
     }
 }
 

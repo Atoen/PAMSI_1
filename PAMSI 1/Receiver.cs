@@ -1,8 +1,9 @@
-﻿using PAMSI_1.Logging;
+﻿using PAMSI_1.DataStructures;
+using PAMSI_1.Logging;
 
 namespace PAMSI_1;
 
-public delegate void TransmissionFinishedEventHandler(object sender, ushort transmissionId);
+public delegate void TransmissionFinishedEventHandler(object sender, Transmission transmission);
 
 public class Receiver
 {
@@ -13,12 +14,12 @@ public class Receiver
         _server.TransmissionStarted += ServerOnTransmissionStarted;
         _server.PacketTransmitted += ReceivePacket;
 
-        TransmissionFinished += _server.CloseTransmission;
+        TransmissionFinished += (sender, transmission) => _server.CloseTransmission(sender, transmission.Id);
     }
 
     public event TransmissionFinishedEventHandler? TransmissionFinished;
 
-    private readonly Dictionary<ushort, Transmission> _incomingTransmission = new();
+    private readonly SimpleArrayList<Transmission> _incomingTransmissions = new();
 
     private readonly object _syncRoot = new();
     private readonly Server _server;
@@ -29,7 +30,7 @@ public class Receiver
     {
         _logger.LogInfo($"Incoming transmission {header.Id}, expecting {header.PacketCount} packets.");
 
-        _incomingTransmission.Add(header.Id, new Transmission(header));
+        _incomingTransmissions.Add(new Transmission(header));
     }
 
     private void ReceivePacket(object sender, Packet packet)
@@ -42,14 +43,15 @@ public class Receiver
 
     private void ProcessPacket(Packet packet)
     {
-        if (!_incomingTransmission.TryGetValue(packet.TransmissionId, out var transmission))
+        var transmission = _incomingTransmissions.Find(t => t.Id == packet.TransmissionId);
+
+        if (transmission == null)
         {
             _logger.LogWarning($"Received packet is not bound to any open transmission. Packet: {packet}");
             return;
         }
 
         _logger.LogTrace($"Received packet {packet}");
-
         transmission.ReceivePacket(packet);
 
         if (transmission.Completed)
@@ -60,9 +62,9 @@ public class Receiver
 
     private void FinishTransmission(Transmission transmission)
     {
-        TransmissionFinished?.Invoke(this, transmission.Id);
-        _incomingTransmission.Remove(transmission.Id);
+        _incomingTransmissions.Remove(transmission);
 
-        _logger.LogInfo($"Transmission {transmission.Id} data has been received: {transmission.Data}");
+        _logger.LogInfo($"Transmission {transmission.Id} data has been received.");
+        TransmissionFinished?.Invoke(this, transmission);
     }
 }

@@ -2,24 +2,24 @@
 
 public class Logger : ILogger
 {
-    public Logger(string source, LogLevel logLevel = LogLevel.Warning)
+    public Logger(string source, LogLevel loggerLevel)
     {
         Source = source;
-        LogLevel = logLevel;
+        LoggerLevel = loggerLevel;
     }
 
     public void Log(LogLevel logLevel, string message)
     {
-        if (logLevel < LogLevel) return;
+        if (logLevel < LoggerLevel || LoggerLevel == LogLevel.None) return;
 
         switch (logLevel)
         {
             case LogLevel.Trace:
-                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.ForegroundColor = ConsoleColor.DarkGray;
                 break;
 
             case LogLevel.Info:
-                Console.ForegroundColor = ConsoleColor.Green;
+                Console.ForegroundColor = ConsoleColor.White;
                 break;
 
             case LogLevel.Warning:
@@ -39,9 +39,14 @@ public class Logger : ILogger
 
         }
 
-        Console.WriteLine($"{DateTime.Now,19} [{logLevel,7}] {Source}: {message}");
+        Console.WriteLine($"{DateTime.Now,19} [{_levels[(int)logLevel],5}] {Source}: {message}");
         Console.ResetColor();
     }
+
+    private readonly string[] _levels =
+    {
+        "TRACE", "INFO", "WARN", "ERROR"
+    };
 
     public void LogTrace(string message) => Log(LogLevel.Trace, message);
 
@@ -52,5 +57,5 @@ public class Logger : ILogger
     public void LogError(string message) => Log(LogLevel.Error, message);
 
     public string Source { get; set; }
-    public LogLevel LogLevel { get; set; }
+    public LogLevel LoggerLevel { get; set; }
 }

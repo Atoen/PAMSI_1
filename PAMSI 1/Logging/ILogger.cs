@@ -14,7 +14,7 @@ public interface ILogger
 
     string Source { get; set; }
 
-    LogLevel LogLevel { get; set; }
+    LogLevel LoggerLevel { get; set; }
 }
 
 public enum LogLevel
@@ -23,5 +23,5 @@ public enum LogLevel
     Info,
     Warning,
     Error,
-    None
+    None = -1
 }

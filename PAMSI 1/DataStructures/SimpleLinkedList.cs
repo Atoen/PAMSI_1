@@ -15,6 +15,7 @@ public class SimpleLinkedList<T> : IEnumerable<T>
         public Node? Next { get; set; }
     }
 
+    private int _version;
     private Node? _head;
     private readonly IEqualityComparer<T> _equalityComparer = EqualityComparer<T>.Default;
 
@@ -23,22 +24,7 @@ public class SimpleLinkedList<T> : IEnumerable<T>
         var newNode = new Node(value) { Next = _head };
 
         _head = newNode;
-
-        // if (_head == null)
-        // {
-        //     _head = newNode;
-        // }
-        // else
-        // {
-        //     var current = _head;
-        //     
-        //     while (current.Next != null)
-        //     {
-        //         current = current.Next;
-        //     }
-        //     
-        //     current.Next = newNode;
-        // }
+        _version++;
     }
 
     public bool Remove(T value)
@@ -51,6 +37,7 @@ public class SimpleLinkedList<T> : IEnumerable<T>
         if (_equalityComparer.Equals(_head.Value, value))
         {
             _head = _head.Next;
+            _version++;
             return true;
         }
 
@@ -60,9 +47,10 @@ public class SimpleLinkedList<T> : IEnumerable<T>
             if (_equalityComparer.Equals(current.Next.Value, value))
             {
                 current.Next = current.Next.Next;
+                _version++;
                 return true;
             }
-            
+
             current = current.Next;
         }
 
@@ -79,6 +67,7 @@ public class SimpleLinkedList<T> : IEnumerable<T>
         if (_head == node)
         {
             _head = _head.Next;
+            _version++;
             return true;
         }
 
@@ -88,9 +77,10 @@ public class SimpleLinkedList<T> : IEnumerable<T>
             if (current.Next == node)
             {
                 current.Next = node.Next;
+                _version++;
                 return true;
             }
-            
+
             current = current.Next;
         }
 
@@ -100,19 +90,20 @@ public class SimpleLinkedList<T> : IEnumerable<T>
     public void Clear()
     {
         _head = null;
+        _version++;
     }
 
     public bool Contains(T value)
     {
         var current = _head;
-        
+
         while (current != null)
         {
             if (_equalityComparer.Equals(current.Value, value))
             {
                 return true;
             }
-            
+
             current = current.Next;
         }
         return false;
@@ -121,7 +112,7 @@ public class SimpleLinkedList<T> : IEnumerable<T>
     public Node? Find(T value)
     {
         var current = _head;
-        
+
         while (current != null)
         {
             if (_equalityComparer.Equals(current.Value, value))
@@ -134,67 +125,25 @@ public class SimpleLinkedList<T> : IEnumerable<T>
 
         return null;
     }
-    
+
     public IEnumerator<T> GetEnumerator()
     {
-        return new Enumerator(_head);
+        var version = _version;
+
+        var current = _head;
+
+        while (current != null)
+        {
+            if (_version != version) throw new InvalidOperationException("Collection changed during iteration.");
+
+            yield return current.Value;
+
+            current = current.Next;
+        }
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
     }
-
-    private struct Enumerator : IEnumerator<T>
-    {
-        private Node? _currentNode;
-        private Node? _head;
-
-        public Enumerator(Node head)
-        {
-            _currentNode = null;
-            _head = head;
-        }
-
-        public T Current => _currentNode.Value;
-
-        object IEnumerator.Current => Current;
-
-        public void Dispose() { }
-
-        public bool MoveNext()
-        {
-            if (_currentNode == null)
-            {
-                _currentNode = _head;
-            }
-            else
-            {
-                _currentNode = _currentNode.Next;
-            }
-            
-            return _currentNode != null;
-        }
-
-        public void Reset()
-        {
-            _currentNode = null;
-        }
-    }
-
-    // public IEnumerator<T> GetEnumerator()
-    // {
-    //     var current = _head;
-    //     
-    //     while (current != null)
-    //     {
-    //         yield return current.Value;
-    //         current = current.Next;
-    //     }
-    // }
-    //
-    // IEnumerator IEnumerable.GetEnumerator()
-    // {
-    //     return GetEnumerator();
-    // }
 }
