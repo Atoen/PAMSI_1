@@ -110,7 +110,7 @@ public class SimpleArrayList<T> : IEnumerable<T>
         return -1;
     }
 
-    public int IndexOf(T item) => Array.IndexOf(_items, item, 0, Count);
+    public int IndexOf(T item) => Array.IndexOf(_items, item);
 
     public T? Find(Predicate<T> predicate)
     {

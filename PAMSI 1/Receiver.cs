@@ -47,11 +47,11 @@ public class Receiver
 
         if (transmission == null)
         {
-            _logger.LogWarning($"Received packet is not bound to any open transmission. Packet: {packet}");
+            _logger.LogWarning($"Received packet is not bound to any open transmission. Packet: {packet}.");
             return;
         }
 
-        _logger.LogTrace($"Received packet {packet}");
+        _logger.LogTrace($"Received {packet}.");
         transmission.ReceivePacket(packet);
 
         if (transmission.Completed)
@@ -64,7 +64,7 @@ public class Receiver
     {
         _incomingTransmissions.Remove(transmission);
 
-        _logger.LogInfo($"Transmission {transmission.Id} data has been received.");
+        _logger.LogInfo($"Transmission {transmission.Id} data received.");
         TransmissionFinished?.Invoke(this, transmission);
     }
 }

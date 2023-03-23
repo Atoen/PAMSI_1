@@ -13,7 +13,6 @@ public class Server
 
     public int PacketSize { get; set; } = 100;
 
-    // private readonly HashSet3<ushort> _activeTransmissions = new();
     private readonly SimpleArrayList<ushort> _activeTransmissions = new();
     private readonly ILogger _logger = new Logger("Server", LogLevel.Trace);
 
@@ -35,7 +34,6 @@ public class Server
         for (int i = 0, packetIndex = 0; i < message.Length; i += packetSize, packetIndex++)
         {
             var length = Math.Min(packetSize, message.Length - i);
-
             var chunk = message.Substring(i, length);
 
             packets[packetIndex] = new Packet(packetIndex, id, chunk);
@@ -54,7 +52,7 @@ public class Server
         var packetTasks = packets.Select(SendPacket).ToArray();
         Task.WhenAll(packetTasks);
 
-        _logger.LogTrace($"Transmission {header.Id} packets ({header.PacketCount}) have been sent.");
+        _logger.LogTrace($"Transmission {header.Id} packets ({header.PacketCount}) sent.");
     }
 
     private async Task SendPacket(Packet packet)
