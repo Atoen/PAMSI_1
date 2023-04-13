@@ -18,7 +18,6 @@ if (!int.TryParse(packetLengthInput, out var packetLength) || packetLength < 1)
     return;
 }
 
-
 var server = new Server
 {
     PacketSize = packetLength

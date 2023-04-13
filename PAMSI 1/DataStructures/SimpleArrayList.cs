@@ -23,6 +23,7 @@ public class SimpleArrayList<T> : IEnumerable<T>
 
     public int Count { get; private set; }
     public int Capacity => _items.Length;
+    public bool IsEmpty => Count == 0;
 
     private T[] _items;
     private int _version;
@@ -110,7 +111,15 @@ public class SimpleArrayList<T> : IEnumerable<T>
         return -1;
     }
 
-    public int IndexOf(T item) => Array.IndexOf(_items, item);
+    public int IndexOf(T item)
+    {
+        for (var i = 0; i < Count; i++)
+        {
+            if (EqualityComparer<T>.Default.Equals(item, _items[i])) return i;
+        }
+
+        return -1;
+    }
 
     public T? Find(Predicate<T> predicate)
     {
@@ -147,7 +156,6 @@ public class SimpleArrayList<T> : IEnumerable<T>
 
             yield return item;
         }
-
     }
 
     IEnumerator IEnumerable.GetEnumerator()
